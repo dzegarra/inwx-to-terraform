@@ -1,0 +1,24 @@
+{
+  "name": "inwx-to-terraform",
+  "version": "1.0.0",
+  "description": "Tool to import INWX domains into Terraform INWX provider",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "type": "module",
+  "keywords": [
+    "inwx",
+    "terraform",
+    "import"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Daniel Zegarra <dzegarra@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "domrobot-client": "^3.1.0",
+    "dotenv": "^16.3.1"
+  }
+}
