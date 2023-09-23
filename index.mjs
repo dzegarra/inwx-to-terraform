@@ -34,7 +34,7 @@ for (const domain of domains) {
     let domainResource = domain.resource;
     
     try {
-        console.log(`Processing domain ${domain.domain}...`)
+        console.log(`Processing domain ${domain.domain} ...`)
 
         const records = await getNameServerInfo(apiClient, domain.domain)
             .then(records => records.map((record) => getDomainRecordTfResource(domain.domain, record)));
@@ -47,7 +47,7 @@ for (const domain of domains) {
 
         saveIntoFile(`./output/${domain.domain}.tf`, domainResource);
     } catch (error) {
-        console.error("Error fetching the nameserver information of the domain:", error);
+        console.error(`Error processing domain ${domain.domain}:`, error);
     }
 
     saveIntoFile(`./output/import.tf`, importResources);
