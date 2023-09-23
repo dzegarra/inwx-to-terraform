@@ -34,6 +34,48 @@ export const TransferMode = {
 }
 
 /**
+ * @enum {string}
+ */
+export const RecordType = {
+    A: 'A',
+    AAAA: 'AAAA',
+    AFSDB: 'AFSDB',
+    ALIAS: 'ALIAS',
+    CAA: 'CAA',
+    CERT: 'CERT',
+    CNAME: 'CNAME',
+    HINFO: 'HINFO',
+    HTTPS: 'HTTPS',
+    IPSECKEY: 'IPSECKEY',
+    KEY: 'KEY',
+    LOC: 'LOC',
+    MX: 'MX',
+    NAPTR: 'NAPTR',
+    NS: 'NS',
+    OPENPGPKEY: 'OPENPGPKEY',
+    PTR: 'PTR',
+    RP: 'RP',
+    SMIMEA: 'SMIMEA',
+    SOA: 'SOA',
+    SRV: 'SRV',
+    SSHFP: 'SSHFP',
+    SVCB: 'SVCB',
+    TLSA: 'TLSA',
+    TXT: 'TXT',
+    URI: 'URI',
+    URL: 'URL',
+}
+
+/**
+ * @enum {string}
+ */
+export const UrlRedirectType = {
+    HEADER301: 'HEADER301',
+    HEADER302: 'HEADER302',
+    FRAME: 'FRAME',
+}
+
+/**
  * @typedef {Object} DomainDate
  * @property {string} scalar
  * @property {string} xmlrpc_type
@@ -65,4 +107,40 @@ export const TransferMode = {
  *    tags: Array<string>,
  *    verificationStatus: string,
  * }} Domain
+ */
+
+/**
+ * @typedef {{
+ *   id: number,
+ *   name: string,
+ *   type: RecordType,
+ *   content: string,
+ *   ttl: number,
+ *   prio: number,
+ *   urlRedirectType: UrlRedirectType|undefined,
+ *   urlRedirectTitle: string|undefined,
+ *   urlRedirectDescription: string|undefined,
+ *   urlRedirectKeywords: string|undefined,
+ *   urlRedirectFavIcon: string|undefined,
+ *   urlAppend: boolean|undefined,
+ * }} DomainRecord
+ */
+
+
+/**
+ * @typedef {{
+*   domain: string, 
+*   identifier: string, 
+*   import: string, 
+*   resource: string
+* }} DomainResource
+*/
+
+/**
+ * @typedef {{
+ *   domain: string, 
+ *   identifier: string, 
+ *   buildImport: (identifier) => string, 
+ *   buildResource: (identifier) => string
+ * }} RecordResourceGenerator
  */

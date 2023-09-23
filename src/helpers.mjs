@@ -1,10 +1,13 @@
+import { writeFileSync, rmSync, existsSync, mkdirSync } from "fs"
 import { ApiClient, Language } from "domrobot-client";
 
-export const initApiClient = async () => {
-    const username = process.env.INWX_USER;
-    const password = process.env.INWX_PASSWORD;
-    const twoFaSecret = process.env.INWX_2FA_SECRET || "";
-
+/**
+ * @param {string} username 
+ * @param {string} password 
+ * @param {string|undefined} twoFaSecret 
+ * @returns {Promise<ApiClient>}
+ */
+export const initApiClient = async (username, password, twoFaSecret = "") => {
     if (!username || !password) {
         throw new Error(
             "Missing INWX credentials. Please specify INWX_USER and INWX_PASSWORD."
@@ -21,11 +24,10 @@ export const initApiClient = async () => {
 }
 
 /**
- * 
  * @param {ApiClient} apiClient 
  * @param {string} method 
  * @param {object} params 
- * @returns 
+ * @returns {Promise<any>}
  */
 export const callApi = async (apiClient, method, params = {}) => {
     const response = await apiClient.callApi(method, params);
@@ -35,14 +37,39 @@ export const callApi = async (apiClient, method, params = {}) => {
     return response?.resData;
 }
 
-
-
 /**
  * @link https://www.inwx.com/en/help/apidoc/f/ch02s09.html#domain.list
  * @param {ApiClient} apiClient 
  * @returns {Promise<Array<import("./constants").Domain>>}
  */
-export const getDomains = async (apiClient) => {
-    const domainsList = await callApi(apiClient, "domain.list", {});
-    return domainsList?.domain;
+export const getDomains = async (apiClient, maxResultCount = 1000) => {
+    const response = await callApi(apiClient, "domain.list", {pagelimit: maxResultCount});
+    return response?.domain;
+}
+
+/**
+ * @link https://www.inwx.com/en/help/apidoc/f/ch02s09.html#nameserver.info
+ * @param {ApiClient} apiClient 
+ * @param {string} domainName
+ * @returns {Promise<Array<import("./constants").DomainRecord>>}
+ */
+export const getNameServerInfo = async (apiClient, domainName) => {
+    const response = await callApi(apiClient, "nameserver.info", {domain: domainName});
+    return response?.record;
+}
+
+/**
+ * @param {string} filePath
+ * @param {string} contents 
+ */
+export const saveIntoFile = (filePath, contents) => {
+    if (existsSync(filePath)) rmSync(filePath);
+    writeFileSync(filePath, contents);
+}
+
+export const resetOutputDir = () => {
+    if (existsSync('./output')){
+        rmSync('./output', {recursive: true, force: true});
+    }
+    mkdirSync('./output');
 }
