@@ -11,6 +11,8 @@ Tool to import INWX domains into Terraform using the Import [Configuration featu
 
 ## Preparation
 
+> ⚠️ This tool requires Node.js version 18 or higher.
+
 Create a .env file in the root of this repository with the following content:
 
 ```dotenv
@@ -19,17 +21,16 @@ INWX_PASSWORD=your-inwx-password
 INWX_2FA_SECRET=
 ```
 
+You can also define the environment variables directly in the command line before running the tool.
+
 ## Usage
 
 ```shell
-# Install NPM dependencies
-npm install
+# If you have the credentials in the .env file or already available in the environment variables
+npx inwx-to-terraform
 
-# Create the Terraform resources in the "output" directory
-npm run start
-
-# Re-format terraform files in ./output using the "terraform ftm" command
-npm run fmt
+# If you want to define the credentials in the command line
+INWX_USER=your-inwx-username INWX_PASSWORD=your-inwx-password npx inwx-to-terraform -y
 ```
 
 ## Using the generated files
@@ -42,7 +43,7 @@ npm run fmt
 terraform init
 
 # Copy the generated files into the Terraform directory
-cp -r ../inwx-to-terraform/output/* .
+cp -r ./output/* .
 
 # Apply the changes to create/update the .tfstate file
 terraform apply
