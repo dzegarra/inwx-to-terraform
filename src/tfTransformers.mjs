@@ -69,7 +69,7 @@ export const buildResource = (record, index, allRecords) => {
  * @returns {import("./constants").ContactResource}
  */
 export const getContactTfResource = (contact) => {
-    const identifier = genResourceIdentifier(contact.name);
+    const identifier = genResourceIdentifier(`${contact.type}_${contact.name}`);
     const importResource = `import {
     id = ${contact.id}
     to = inwx_domain_contact.${identifier}
@@ -83,10 +83,11 @@ export const getContactTfResource = (contact) => {
         country_code: contact.cc,
         phone_number: contact.voice,
         email: contact.email,
+        ...(contact.org ? { organization: contact.org } : {}),
         ...(contact.sp ? { state_province: contact.sp } : {}),
         ...(contact.fax ? { fax: contact.fax } : {}),
         ...(contact.remarks ? { remarks: contact.remarks } : {}),
-        ...(contact.protection ? { protection: contact.protection } : {}),
+        ...(contact.protection ? { whois_protection: contact.protection } : {}),
     }
     return {
         identifier,
