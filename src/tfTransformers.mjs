@@ -1,3 +1,5 @@
+import { printKeyValues } from "./helpers.mjs";
+
 /**
  * @param {import("./constants").Domain} domain 
  * @returns {boolean}
@@ -5,11 +7,11 @@
 export const isInwxDomain = (domain) => domain.ns.includes("ns.inwx.de");
 
 /**
- * Generates a valid Terraform resource identifier from a domain name.
- * @param {string} domainName
+ * Generates a valid Terraform resource identifier.
+ * @param {string} name
  * @returns {string}
  */
-export const getDomainResourceIdentifier = (domainName) => domainName.replace(/[^\w\d\p{L}_\-]/gui, "_").replace("__", "_");
+export const genResourceIdentifier = (name) => name.toLocaleLowerCase().replace(/[^\w\d\p{L}_\-]/gui, "_").replace("__", "_");
 
 /**
  * Generates a valid Terraform resource identifier from a record name.
@@ -18,17 +20,17 @@ export const getDomainResourceIdentifier = (domainName) => domainName.replace(/[
  * @returns {string}
  */
 export const getRecordResourceIdentifier = (domainName, record) => {
-    const domainIdentifier = getDomainResourceIdentifier(domainName);
-    const recordIdentifier = getDomainResourceIdentifier(record.name);
+    const domainIdentifier = genResourceIdentifier(domainName);
+    const recordIdentifier = genResourceIdentifier(record.name);
     let finalRecordIdentifier = recordIdentifier.replace(domainIdentifier, "");
 
     if (finalRecordIdentifier.endsWith("_")) finalRecordIdentifier = finalRecordIdentifier.slice(0, -1);
 
     if (record.type === "TXT" && record.content.includes("v=spf1")) {
-        finalRecordIdentifier+= "_spf";
+        finalRecordIdentifier += "_spf";
     }
 
-    return `${getDomainResourceIdentifier(domainName)}_${record.type.toLowerCase()}${finalRecordIdentifier.length > 0 ? ("_" + finalRecordIdentifier).replace("__", "_") : ""}`;
+    return `${genResourceIdentifier(domainName)}_${record.type.toLowerCase()}${finalRecordIdentifier.length > 0 ? ("_" + finalRecordIdentifier).replace("__", "_") : ""}`;
 }
 
 /**
@@ -63,11 +65,42 @@ export const buildResource = (record, index, allRecords) => {
 }
 
 /**
+ * @param {import("./constants").Contact} contact
+ * @returns {import("./constants").ContactResource}
+ */
+export const getContactTfResource = (contact) => {
+    const identifier = genResourceIdentifier(contact.name);
+    const importResource = `import {
+    id = ${contact.id}
+    to = inwx_domain_contact.${identifier}
+}`;
+    const resourceParams = {
+        type: contact.type,
+        name: contact.name,
+        street_address: contact.street,
+        city: contact.city,
+        postal_code: contact.pc,
+        country_code: contact.cc,
+        phone_number: contact.voice,
+        email: contact.email,
+        ...(contact.sp ? { state_province: contact.sp } : {}),
+        ...(contact.fax ? { fax: contact.fax } : {}),
+        ...(contact.remarks ? { remarks: contact.remarks } : {}),
+        ...(contact.protection ? { protection: contact.protection } : {}),
+    }
+    return {
+        identifier,
+        import: importResource,
+        resource: printKeyValues("inwx_domain_contact", identifier, resourceParams)
+    };
+}
+
+/**
  * @param {import("./constants").Domain} domain
  * @returns {import("./constants").DomainResource}
  */
 export const getDomainTfResource = (domain) => {
-    const identifier = getDomainResourceIdentifier(domain.domain);
+    const identifier = genResourceIdentifier(domain.domain);
     const importResource = `import {
     id = "${domain.domain}"
     to = inwx_domain.${identifier}
@@ -118,9 +151,7 @@ export const getDomainRecordTfResource = (domainName, record) => {
                 ...(record.urlRedirectKeywords ? { url_redirect_keywords: record.urlRedirectKeywords } : {}),
                 ...(record.urlAppend ? { url_append: record.urlAppend } : {}),
             }
-            return `resource "inwx_nameserver_record" "${identifier}" {
-    ${Object.entries(finalRecord).map(([key, value]) => `${key} = ${typeof value === "string" ? `"${value}"` : value}`).join("\n    ")}
-}`
+            return printKeyValues("inwx_nameserver_record", identifier, finalRecord);
         }
     };
 }

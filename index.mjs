@@ -1,10 +1,10 @@
 import { config } from "dotenv";
-import { getDomains, getNameServerInfo, initApiClient, resetOutputDir, saveIntoFile } from "./src/helpers.mjs";
-import { buildImport, buildResource, getDomainRecordTfResource, getDomainTfResource, isInwxDomain } from "./src/tfTransformers.mjs";
+import { getContacts, getDomains, getNameServerInfo, initApiClient, resetOutputDir, saveIntoFile } from "./src/helpers.mjs";
+import { buildImport, buildResource, getContactTfResource, getDomainRecordTfResource, getDomainTfResource, isInwxDomain } from "./src/tfTransformers.mjs";
 
 config();
 
-console.log("Authenticating with credentials...");
+console.log("Authenticating with credentials ...");
 const apiClient = await initApiClient(
     process.env.INWX_USER ?? "",
     process.env.INWX_PASSWORD ?? "",
@@ -13,13 +13,27 @@ const apiClient = await initApiClient(
 
 resetOutputDir();
 
+let importResources = "";
+
+try {
+    console.log("Processing contacts information ...");
+    const contacts = await getContacts(apiClient).then((contacts) => contacts.map(getContactTfResource));
+    importResources = contacts.map((resource) => resource.import).join("\n\n");
+    const contactResources = contacts.map((resource) => resource.resource).join("\n\n");
+
+    saveIntoFile(`./output/contacts.tf`, contactResources);
+
+} catch (error) {
+    console.error("Error fetching the list of domains:", error);
+}
+
 /**
  * @type {Array<import("./src/constants").DomainResource>}
  */
 let domains = [];
 
 try {
-    console.log("Processing domains information:");
+    console.log("Processing domains information ...");
     domains = await getDomains(apiClient)
         .then((domains) => domains.filter(isInwxDomain))
         .then((domains) => domains.map(getDomainTfResource));
@@ -31,7 +45,7 @@ try {
 /**
  * @type {string}
  */
-let importResources = domains.map((domainResource) => domainResource.import).join("\n\n");
+importResources += `\n\n${domains.map((domainResource) => domainResource.import).join("\n\n")}`;
 
 for (const domain of domains) {
     try {
@@ -53,5 +67,6 @@ for (const domain of domains) {
         console.error(`Error processing domain ${domain.domain}:`, error);
     }
 
-    saveIntoFile(`./output/import.tf`, importResources);
-} 
+}
+
+saveIntoFile(`./output/import.tf`, importResources);

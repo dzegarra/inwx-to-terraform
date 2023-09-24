@@ -38,6 +38,16 @@ export const callApi = async (apiClient, method, params = {}) => {
 }
 
 /**
+ * @link https://www.inwx.com/en/help/apidoc/f/ch02s06.html#contact.list
+ * @param {ApiClient} apiClient 
+ * @returns {Promise<Array<import("./constants").Contact>>}
+ */
+export const getContacts = async (apiClient, maxResultCount = 1000) => {
+    const response = await callApi(apiClient, "contact.list", {pagelimit: maxResultCount});
+    return response?.contact;
+}
+
+/**
  * @link https://www.inwx.com/en/help/apidoc/f/ch02s09.html#domain.list
  * @param {ApiClient} apiClient 
  * @returns {Promise<Array<import("./constants").Domain>>}
@@ -48,7 +58,7 @@ export const getDomains = async (apiClient, maxResultCount = 1000) => {
 }
 
 /**
- * @link https://www.inwx.com/en/help/apidoc/f/ch02s09.html#nameserver.info
+ * @link https://www.inwx.com/en/help/apidoc/f/ch02s15.html#nameserver.info
  * @param {ApiClient} apiClient 
  * @param {string} domainName
  * @returns {Promise<Array<import("./constants").DomainRecord>>}
@@ -73,3 +83,14 @@ export const resetOutputDir = () => {
     }
     mkdirSync('./output');
 }
+
+/**
+ * 
+ * @param {string} resourceType
+ * @param {string} identifier
+ * @param {object} params
+ * @returns 
+ */
+export const printKeyValues = (resourceType, identifier, params) => `resource "${resourceType}" "${identifier}" {
+    ${Object.entries(params).map(([key, value]) => `${key} = ${typeof value === "string" ? `"${value}"` : value}`).join("\n    ")}
+}`
