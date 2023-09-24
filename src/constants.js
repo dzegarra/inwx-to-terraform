@@ -436,5 +436,10 @@ const Country = {
 */
 
 /**
- * @typedef {{identifier: string, import: string, resource: string}} ContactResource
+ * @typedef {{
+ *   identifier: string,
+ *   roId: number,
+ *   import: string,
+ *   resource: string,
+ * }} ContactResource
  */

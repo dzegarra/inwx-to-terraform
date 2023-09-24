@@ -13,12 +13,20 @@ const apiClient = await initApiClient(
 
 resetOutputDir();
 
+/**
+ * Catalog with the contact IDs and their corresponding Terraform identifiers.
+ * Later on, this catalog will be used to replace the contact IDs received from the API with the Terraform identifiers 
+ *  for the inwx_domain_contact resources.
+ * @type {Record<number, string>}
+ */
+let contactIDs = {};
 let importResources = "";
 
 try {
     console.log("Processing contacts information ...");
     const contacts = await getContacts(apiClient)
         .then((contacts) => contacts.map(getContactTfResource));
+    contactIDs = contacts.reduce((acc, contact) => ({ ...acc, [contact.roId]: contact.identifier }), {});
     importResources = contacts.map((resource) => resource.import).join("\n\n");
     const contactResources = contacts.map((resource) => resource.resource).join("\n\n");
 
@@ -38,7 +46,7 @@ try {
     domains = await getDomains(apiClient)
         .then((domains) => domains
             .filter(isInwxDomain)
-            .map(getDomainTfResource)
+            .map(getDomainTfResource.bind(null, contactIDs))
         );
 } catch (error) {
     console.error("Error fetching the list of domains:", error);

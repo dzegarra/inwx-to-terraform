@@ -43,6 +43,17 @@ const countSameIdentifiersBeforeIndex = (records, identifier, index) =>
     records.slice(0, index).filter((r) => r.identifier === identifier).length;
 
 /**
+ * @param {Record<number, string>} contactIDs 
+ * @param {number} contactID 
+ * @returns {string}
+ */
+const resolveContactIdentifier = (contactIDs, contactID) => {
+    if (contactIDs[contactID])
+        return `inwx_domain_contact.${contactIDs[contactID]}`;
+    throw new Error(`Contact with ID ${contactID} not found.`);
+}
+
+/**
  * @param {import("./constants").RecordResourceGenerator} record 
  * @param {number} index 
  * @param {Array<import("./constants").RecordResourceGenerator>} allRecords 
@@ -91,16 +102,18 @@ export const getContactTfResource = (contact) => {
     }
     return {
         identifier,
+        roId: contact.id,
         import: importResource,
         resource: printKeyValues("inwx_domain_contact", identifier, resourceParams)
     };
 }
 
 /**
+ * @param {Record<number, string>} contactIDs
  * @param {import("./constants").Domain} domain
  * @returns {import("./constants").DomainResource}
  */
-export const getDomainTfResource = (domain) => {
+export const getDomainTfResource = (contactIDs, domain) => {
     const identifier = genResourceIdentifier(domain.domain);
     const importResource = `import {
     id = "${domain.domain}"
@@ -113,10 +126,10 @@ export const getDomainTfResource = (domain) => {
     renewal_mode = "${domain.renewalMode}"
     transfer_lock = ${domain.transferLock ? 'true' : 'false'}
     contacts {
-        admin = ${domain.admin}
-        billing = ${domain.billing}
-        registrant = ${domain.registrant}
-        tech = ${domain.tech}
+        admin = ${resolveContactIdentifier(contactIDs, domain.admin)}.id
+        billing = ${resolveContactIdentifier(contactIDs, domain.billing)}.id
+        registrant = ${resolveContactIdentifier(contactIDs, domain.registrant)}.id
+        tech = ${resolveContactIdentifier(contactIDs, domain.tech)}.id
     }
 }`;
 
