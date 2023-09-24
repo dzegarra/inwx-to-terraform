@@ -17,7 +17,7 @@
     "node": ">=18.0.0"
   },
   "author": "Daniel Zegarra <dzegarra@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "domrobot-client": "^3.1.0",
     "dotenv": "^16.3.1"
