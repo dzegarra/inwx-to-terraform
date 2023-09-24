@@ -13,7 +13,7 @@ Tool to import INWX domains into Terraform using the Import [Configuration featu
 
 Create a .env file in the root of this repository with the following content:
 
-```
+```dotenv
 INWX_USER=your-inwx-username
 INWX_PASSWORD=your-inwx-password
 INWX_2FA_SECRET=
@@ -21,7 +21,7 @@ INWX_2FA_SECRET=
 
 ## Usage
 
-```
+```shell
 # Install NPM dependencies
 npm install
 
@@ -34,7 +34,7 @@ npm run fmt
 
 ## Using the generated files
 
-```
+```shell
 # Configure INWX Provider in your Terraform project
 # Instructions at https://registry.terraform.io/providers/inwx/inwx/latest/docs
 
@@ -62,19 +62,22 @@ The `terraform apply` will present the plan of changes before making any change.
 The following naming convention is used for the resources:
 
 - **Domains (`inwx_domain`):** domain
+- **Contacts (`inwx_domain_contact`):** ctype_cname
 - **Domain records (`inwx_nameserver_record`):** domain_type_record#
 - **SPF domain records (`inwx_nameserver_record`):** domain_type_record_spf#
 
 ### Legend
 
+- **domain**: Domain name with underscores instead of non-letter. All in lowercase.
+- **ctype**: Contact type (PERSON, ORG, ROLE) in lowercase
+- **cname**: Contact's name in lowercase with underscores instead of non-letter. All in lowercase.
 - **type**: Record type (A, AAAA, CNAME, MX, TXT, etc.) in lowercase
 - **record**: Record name with underscores instead of non-letter. All in lowercase.
-- **domain**: Domain name with underscores instead of non-letter. All in lowercase.
 - **#**: If the same identifier appears more than once, a number is appended to it.
 
 ## Output examples
 
-```
+```hcl
 # contacts.tf
 resource "inwx_domain_contact" "org_guy_one" {
     type = "ORG"
