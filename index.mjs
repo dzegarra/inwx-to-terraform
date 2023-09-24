@@ -28,22 +28,25 @@ try {
     process.exit(1);
 }
 
+/**
+ * @type {string}
+ */
 let importResources = domains.map((domainResource) => domainResource.import).join("\n\n");
 
 for (const domain of domains) {
-    let domainResource = domain.resource;
-    
     try {
         console.log(`Processing domain ${domain.domain} ...`)
 
         const records = await getNameServerInfo(apiClient, domain.domain)
-            .then(records => records.map((record) => getDomainRecordTfResource(domain.domain, record)));
+            .then(dnsRecords => dnsRecords.map((dnsRecord) => getDomainRecordTfResource(domain.domain, dnsRecord)));
 
-        const recordImports = records.map(buildImport).join("\n\n");
-        const recordResources = records.map(buildResource).join("\n\n");
+        /**
+         * @type {string}
+         */
+        const recordsResources = records.map(buildResource).join("\n\n");
 
-        importResources += `\n\n${recordImports}`;
-        domainResource += `\n\n${recordResources}`;
+        importResources += `\n\n${records.map(buildImport).join("\n\n")}`;
+        const domainResource = `${domain.resource}\n\n${recordsResources}`;
 
         saveIntoFile(`./output/${domain.domain}.tf`, domainResource);
     } catch (error) {

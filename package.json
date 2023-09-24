@@ -4,7 +4,8 @@
   "description": "Tool to import INWX domains into Terraform INWX provider",
   "main": "index.js",
   "scripts": {
-    "start": "node index.mjs"
+    "start": "node index.mjs",
+    "fmt": "terraform fmt -recursive"
   },
   "type": "module",
   "keywords": [

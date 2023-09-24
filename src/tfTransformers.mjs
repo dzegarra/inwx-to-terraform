@@ -9,7 +9,7 @@ export const isInwxDomain = (domain) => domain.ns.includes("ns.inwx.de");
  * @param {string} domainName
  * @returns {string}
  */
-export const getDomainResourceIdentifier = (domainName) => domainName.replace(/[^\w\d\p{L}_\-]/gui, "_");
+export const getDomainResourceIdentifier = (domainName) => domainName.replace(/[^\w\d\p{L}_\-]/gui, "_").replace("__", "_");
 
 /**
  * Generates a valid Terraform resource identifier from a record name.
@@ -21,8 +21,14 @@ export const getRecordResourceIdentifier = (domainName, record) => {
     const domainIdentifier = getDomainResourceIdentifier(domainName);
     const recordIdentifier = getDomainResourceIdentifier(record.name);
     let finalRecordIdentifier = recordIdentifier.replace(domainIdentifier, "");
+
     if (finalRecordIdentifier.endsWith("_")) finalRecordIdentifier = finalRecordIdentifier.slice(0, -1);
-    return `${getDomainResourceIdentifier(domainName)}_${record.type.toLowerCase()}${finalRecordIdentifier.length > 0 ? "_" + finalRecordIdentifier : ""}`;
+
+    if (record.type === "TXT" && record.content.includes("v=spf1")) {
+        finalRecordIdentifier+= "_spf";
+    }
+
+    return `${getDomainResourceIdentifier(domainName)}_${record.type.toLowerCase()}${finalRecordIdentifier.length > 0 ? ("_" + finalRecordIdentifier).replace("__", "_") : ""}`;
 }
 
 /**
@@ -31,7 +37,7 @@ export const getRecordResourceIdentifier = (domainName, record) => {
  * @param {number} index
  * @returns {number}
  */
-const countSameIdentifiersBeforeIndex = (records, identifier, index) => 
+const countSameIdentifiersBeforeIndex = (records, identifier, index) =>
     records.slice(0, index).filter((r) => r.identifier === identifier).length;
 
 /**
@@ -91,18 +97,30 @@ export const getDomainTfResource = (domain) => {
 export const getDomainRecordTfResource = (domainName, record) => {
     const proposedIdentifier = getRecordResourceIdentifier(domainName, record);
     return {
-        domain: domainName, 
-        identifier: proposedIdentifier, 
+        domain: domainName,
+        identifier: proposedIdentifier,
         buildImport: (identifier = proposedIdentifier) => `import {
     id = "${domainName}:${record.id}"
     to = inwx_nameserver_record.${identifier}
-}`, 
-        buildResource: (identifier = proposedIdentifier) => `resource "inwx_nameserver_record" "${identifier}" {
-    domain = "${domainName}"
-    type = "${record.type}"
-    content = "${record.content}"
-    name = "${record.name}"
-    ttl = ${record.ttl}
-    prio = ${record.prio}
-}`};
+}`,
+        buildResource: (identifier = proposedIdentifier) => {
+            const finalRecord = {
+                domain: domainName,
+                type: record.type,
+                ...(record.name !== domainName ? { name: record.name } : {}),
+                content: record.content,
+                ...(record.ttl !== 3600 ? { ttl: record.ttl } : {}),
+                ...(record.prio !== 0 ? { prio: record.prio } : {}),
+                ...(record.urlRedirectType ? { url_redirect_type: record.urlRedirectType } : {}),
+                ...(record.urlRedirectTitle ? { url_redirect_title: record.urlRedirectTitle } : {}),
+                ...(record.urlRedirectDescription ? { url_redirect_description: record.urlRedirectDescription } : {}),
+                ...(record.urlRedirectFavIcon ? { url_redirect_fav_icon: record.urlRedirectFavIcon } : {}),
+                ...(record.urlRedirectKeywords ? { url_redirect_keywords: record.urlRedirectKeywords } : {}),
+                ...(record.urlAppend ? { url_append: record.urlAppend } : {}),
+            }
+            return `resource "inwx_nameserver_record" "${identifier}" {
+    ${Object.entries(finalRecord).map(([key, value]) => `${key} = ${typeof value === "string" ? `"${value}"` : value}`).join("\n    ")}
+}`
+        }
+    };
 }
