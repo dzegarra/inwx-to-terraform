@@ -1,8 +1,8 @@
 {
   "name": "inwx-to-terraform",
   "version": "1.0.0",
-  "description": "Tool to import INWX domains into Terraform INWX provider",
-  "main": "index.js",
+  "description": "Tool to generate terraform resources and import blocks to start managing your domains with the official Terraform INWX provider",
+  "main": "index.mjs",
   "scripts": {
     "start": "node index.mjs",
     "fmt": "terraform fmt -recursive"
