@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 import { config } from "dotenv";
 import { getContacts, getDomains, getNameServerInfo, initApiClient, resetOutputDir, saveIntoFile } from "./src/helpers.mjs";
 import { buildImport, buildResource, getContactTfResource, getDomainRecordTfResource, getDomainTfResource, isInwxDomain } from "./src/tfTransformers.mjs";
