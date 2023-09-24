@@ -1,7 +1,5 @@
 # inwx-to-terraform
 
-⚠️ This tool is not ready for production use yet. Only the `inwx_domain` resource is supported at the moment.
-
 Tool to import INWX domains into Terraform using the Import [Configuration feature](https://developer.hashicorp.com/terraform/tutorials/state/state-import) introduced in Terraform v1.5 and using the official INWX provider.
 
 ## Goals
