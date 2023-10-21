@@ -115,6 +115,7 @@ export const getContactTfResource = (contact) => {
  */
 export const getDomainTfResource = (contactIDs, domain) => {
     const identifier = genResourceIdentifier(domain.domain);
+    const whoisProtection = domain.extData?.['WHOIS-PROTECTION'];
     const importResource = `import {
     id = "${domain.domain}"
     to = inwx_domain.${identifier}
@@ -130,7 +131,10 @@ export const getDomainTfResource = (contactIDs, domain) => {
         billing = ${resolveContactIdentifier(contactIDs, domain.billing)}.id
         registrant = ${resolveContactIdentifier(contactIDs, domain.registrant)}.id
         tech = ${resolveContactIdentifier(contactIDs, domain.tech)}.id
-    }
+    }${whoisProtection !== undefined ? `
+    extra_data = {
+        "WHOIS-PROTECTION" = "${whoisProtection}"
+    }` : ""}
 }`;
 
     return { domain: domain.domain, identifier, import: importResource, resource: domainResource };
