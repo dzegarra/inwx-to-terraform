@@ -38,7 +38,7 @@ try {
 }
 
 /**
- * @type {Array<import("./src/constants").DomainObject>}
+ * @type {Array<import("./src/constants.js").DomainObject>}
  */
 let domains = [];
 

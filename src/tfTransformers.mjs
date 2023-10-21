@@ -1,7 +1,7 @@
-import { printKeyValues } from "./helpers.mjs";
+import { extractDomainExtraData, printKeyValues, printSimpleResource } from "./helpers.mjs";
 
 /**
- * @param {import("./constants").Domain} domain 
+ * @param {import("./constants.js").Domain} domain 
  * @returns {boolean}
  */
 export const isInwxDomain = (domain) => domain.ns.includes("ns.inwx.de");
@@ -16,7 +16,7 @@ export const genResourceIdentifier = (name) => name.toLocaleLowerCase().replace(
 /**
  * Generates a valid Terraform resource identifier from a record name.
  * @param {string} domainName
- * @param {import("./constants").DomainRecord} record
+ * @param {import("./constants.js").DomainRecord} record
  * @returns {string}
  */
 export const getRecordResourceIdentifier = (domainName, record) => {
@@ -34,7 +34,7 @@ export const getRecordResourceIdentifier = (domainName, record) => {
 }
 
 /**
- * @param {Array<import("./constants").RecordResourceGenerator>} records 
+ * @param {Array<import("./constants.js").RecordResourceGenerator>} records 
  * @param {string} identifier 
  * @param {number} index
  * @returns {number}
@@ -54,9 +54,9 @@ const resolveContactIdentifier = (contactIDs, contactID) => {
 }
 
 /**
- * @param {import("./constants").RecordResourceGenerator} record 
+ * @param {import("./constants.js").RecordResourceGenerator} record 
  * @param {number} index 
- * @param {Array<import("./constants").RecordResourceGenerator>} allRecords 
+ * @param {Array<import("./constants.js").RecordResourceGenerator>} allRecords 
  * @returns string
  */
 export const buildImport = (record, index, allRecords) => {
@@ -65,9 +65,9 @@ export const buildImport = (record, index, allRecords) => {
 }
 
 /**
- * @param {import("./constants").RecordResourceGenerator} record 
+ * @param {import("./constants.js").RecordResourceGenerator} record 
  * @param {number} index 
- * @param {Array<import("./constants").RecordResourceGenerator>} allRecords 
+ * @param {Array<import("./constants.js").RecordResourceGenerator>} allRecords 
  * @returns string
  */
 export const buildResource = (record, index, allRecords) => {
@@ -76,8 +76,8 @@ export const buildResource = (record, index, allRecords) => {
 }
 
 /**
- * @param {import("./constants").Contact} contact
- * @returns {import("./constants").ContactObject}
+ * @param {import("./constants.js").Contact} contact
+ * @returns {import("./constants.js").ContactObject}
  */
 export const getContactTfResource = (contact) => {
     const identifier = genResourceIdentifier(`${contact.type}_${contact.name}`);
@@ -104,18 +104,19 @@ export const getContactTfResource = (contact) => {
         identifier,
         roId: contact.id,
         import: importResource,
-        resource: printKeyValues("inwx_domain_contact", identifier, resourceParams)
+        resource: printSimpleResource("inwx_domain_contact", identifier, resourceParams)
     };
 }
 
 /**
  * @param {Record<number, string>} contactIDs
- * @param {import("./constants").Domain} domain
- * @returns {import("./constants").DomainObject}
+ * @param {import("./constants.js").Domain} domain
+ * @returns {import("./constants.js").DomainObject}
  */
 export const getDomainTfResource = (contactIDs, domain) => {
     const identifier = genResourceIdentifier(domain.domain);
-    const whoisProtection = domain.extData?.['WHOIS-PROTECTION'];
+    const extraData = extractDomainExtraData(domain);
+    const hasExtraData = Object.keys(extraData).length > 0;
     const importResource = `import {
     id = "${domain.domain}"
     to = inwx_domain.${identifier}
@@ -131,9 +132,9 @@ export const getDomainTfResource = (contactIDs, domain) => {
         billing = ${resolveContactIdentifier(contactIDs, domain.billing)}.id
         registrant = ${resolveContactIdentifier(contactIDs, domain.registrant)}.id
         tech = ${resolveContactIdentifier(contactIDs, domain.tech)}.id
-    }${whoisProtection !== undefined ? `
+    }${hasExtraData ? `
     extra_data = {
-        "WHOIS-PROTECTION" = "${whoisProtection}"
+        ${printKeyValues(extraData, "        ")}
     }` : ""}
 }`;
 
@@ -142,8 +143,8 @@ export const getDomainTfResource = (contactIDs, domain) => {
 
 /**
  * @param {string} domainName 
- * @param {import("./constants").DomainRecord} record
- * @returns {import("./constants").RecordResourceGenerator}
+ * @param {import("./constants.js").DomainRecord} record
+ * @returns {import("./constants.js").RecordResourceGenerator}
  */
 export const getDomainRecordTfResource = (domainName, record) => {
     const proposedIdentifier = getRecordResourceIdentifier(domainName, record);
@@ -169,7 +170,7 @@ export const getDomainRecordTfResource = (domainName, record) => {
                 ...(record.urlRedirectKeywords ? { url_redirect_keywords: record.urlRedirectKeywords } : {}),
                 ...(record.urlAppend ? { url_append: record.urlAppend } : {}),
             }
-            return printKeyValues("inwx_nameserver_record", identifier, finalRecord);
+            return printSimpleResource("inwx_nameserver_record", identifier, finalRecord);
         }
     };
 }

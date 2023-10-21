@@ -344,6 +344,11 @@ const Country = {
 }
 
 /**
+ * Domain extra parameters that are not supported by Terraform and shouldn't be try to be synchronized.
+ */
+export const blacklistedExtraDataKeys = ['WHOIS-PRICE', 'WHOIS-CURRENCY'];
+
+/**
  * @typedef {Object} DomainDate
  * @property {string} scalar
  * @property {string} xmlrpc_type

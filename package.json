@@ -1,6 +1,6 @@
 {
   "name": "inwx-to-terraform",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Tool to generate terraform resources and import blocks to start managing your domains with the official Terraform INWX provider",
   "main": "index.mjs",
   "scripts": {

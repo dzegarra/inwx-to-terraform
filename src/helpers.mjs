@@ -1,5 +1,6 @@
 import { writeFileSync, rmSync, existsSync, mkdirSync } from "fs"
 import { ApiClient, Language } from "domrobot-client";
+import { blacklistedExtraDataKeys } from "./constants.js";
 
 /**
  * @param {string} username 
@@ -40,7 +41,7 @@ export const callApi = async (apiClient, method, params = {}) => {
 /**
  * @link https://www.inwx.com/en/help/apidoc/f/ch02s06.html#contact.list
  * @param {ApiClient} apiClient 
- * @returns {Promise<Array<import("./constants").Contact>>}
+ * @returns {Promise<Array<import("./constants.js").Contact>>}
  */
 export const getContacts = async (apiClient, maxResultCount = 1000) => {
     const response = await callApi(apiClient, "contact.list", {pagelimit: maxResultCount});
@@ -50,7 +51,7 @@ export const getContacts = async (apiClient, maxResultCount = 1000) => {
 /**
  * @link https://www.inwx.com/en/help/apidoc/f/ch02s09.html#domain.list
  * @param {ApiClient} apiClient 
- * @returns {Promise<Array<import("./constants").Domain>>}
+ * @returns {Promise<Array<import("./constants.js").Domain>>}
  */
 export const getDomains = async (apiClient, maxResultCount = 1000) => {
     const response = await callApi(apiClient, "domain.list", {pagelimit: maxResultCount});
@@ -61,7 +62,7 @@ export const getDomains = async (apiClient, maxResultCount = 1000) => {
  * @link https://www.inwx.com/en/help/apidoc/f/ch02s15.html#nameserver.info
  * @param {ApiClient} apiClient 
  * @param {string} domainName
- * @returns {Promise<Array<import("./constants").DomainRecord>>}
+ * @returns {Promise<Array<import("./constants.js").DomainRecord>>}
  */
 export const getNameServerInfo = async (apiClient, domainName) => {
     const response = await callApi(apiClient, "nameserver.info", {domain: domainName});
@@ -85,12 +86,34 @@ export const resetOutputDir = () => {
 }
 
 /**
- * 
- * @param {string} resourceType
- * @param {string} identifier
- * @param {object} params
+ * @param {Record<string, any>} params Key-value pairs to render per line
+ * @param {string} indentStr String to render before each line
  * @returns 
  */
-export const printKeyValues = (resourceType, identifier, params) => `resource "${resourceType}" "${identifier}" {
-    ${Object.entries(params).map(([key, value]) => `${key} = ${typeof value === "string" ? `"${value}"` : value}`).join("\n    ")}
+export const printKeyValues = (params, indentStr="    ") => 
+    Object.entries(params)
+        .map(([key, value]) => {
+            const keyToPrint = (key.includes("-") || key.includes(" ")) ? `"${key}"` : key;
+            const valueToPrint = typeof value === "string" ? `"${value}"` : value;
+            return `${keyToPrint} = ${valueToPrint}`;
+        })
+        .join(`\n${indentStr}`);
+
+/**
+ * @param {string} resourceType
+ * @param {string} identifier
+ * @param {Record<string, any>} params
+ */
+export const printSimpleResource = (resourceType, identifier, params) => `resource "${resourceType}" "${identifier}" {
+    ${printKeyValues(params, "    ")}
 }`
+
+/**
+ * @param {import("./constants.js").Domain} domain 
+ * @returns {Record<string, any>}
+ */
+export const extractDomainExtraData = domain => Object.entries((domain.extData ?? {}))
+    .reduce((acc, [key, value]) => {
+        if (blacklistedExtraDataKeys.includes(key)) return acc;
+        return { ...acc, [key]: value };
+    }, {});
