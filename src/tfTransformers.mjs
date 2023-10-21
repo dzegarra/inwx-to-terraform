@@ -154,7 +154,7 @@ export const getDomainRecordTfResource = (domainName, record) => {
             const finalRecord = {
                 domain: domainName,
                 type: record.type,
-                ...(record.name !== domainName ? { name: record.name } : {}),
+                name: record.name,
                 content: record.content,
                 ...(record.ttl !== 3600 ? { ttl: record.ttl } : {}),
                 ...(record.prio !== 0 ? { prio: record.prio } : {}),

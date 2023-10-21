@@ -109,11 +109,13 @@ resource "inwx_domain" "example_com" {
 }
 resource "inwx_nameserver_record" "example_com_a" {
     domain = "example.com"
+    name = "example.com"
     type = "A"
     content = "123.123.123.123"
 }
 resource "inwx_nameserver_record" "example_com_aaaa" {
     domain = "example.com"
+    name = "example.com"
     type = "AAAA"
     content = "6a01:4a1:1c0c:8795::1"
 }
