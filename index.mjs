@@ -21,14 +21,14 @@ resetOutputDir();
  * @type {Record<number, string>}
  */
 let contactIDs = {};
-let importResources = "";
+let importFileContent = "";
 
 try {
     console.log("Processing contacts information ...");
     const contacts = await getContacts(apiClient)
         .then((contacts) => contacts.map(getContactTfResource));
     contactIDs = contacts.reduce((acc, contact) => ({ ...acc, [contact.roId]: contact.identifier }), {});
-    importResources = contacts.map((resource) => resource.import).join("\n\n");
+    importFileContent = contacts.map((resource) => resource.import).join("\n\n");
     const contactResources = contacts.map((resource) => resource.resource).join("\n\n");
 
     saveIntoFile(`./output/contacts.tf`, contactResources);
@@ -38,7 +38,7 @@ try {
 }
 
 /**
- * @type {Array<import("./src/constants").DomainResource>}
+ * @type {Array<import("./src/constants").DomainObject>}
  */
 let domains = [];
 
@@ -54,14 +54,12 @@ try {
     process.exit(1);
 }
 
-/**
- * @type {string}
- */
-importResources += `\n\n${domains.map((domainResource) => domainResource.import).join("\n\n")}`;
-
-for (const domain of domains) {
+const totalDomainsCount = domains.length;
+for (let currDomainIndex = 0; currDomainIndex < totalDomainsCount; currDomainIndex++) {
+    const domain = domains[currDomainIndex];
+    const positionString = `${currDomainIndex + 1}/${totalDomainsCount}`;
     try {
-        console.log(`Processing domain ${domain.domain} ...`)
+        console.log(`${positionString} - Processing domain ${domain.domain} ...`)
 
         const records = await getNameServerInfo(apiClient, domain.domain)
             .then(dnsRecords => dnsRecords
@@ -75,14 +73,14 @@ for (const domain of domains) {
          */
         const recordsResources = records.map(buildResource).join("\n\n");
 
-        importResources += `\n\n${records.map(buildImport).join("\n\n")}`;
-        const domainResource = `${domain.resource}\n\n${recordsResources}`;
+        importFileContent += `\n\n#Domain ${positionString}\n${domain.import}`;
+        importFileContent += `\n\n${records.map(buildImport).join("\n\n")}`;
+        const domainAndRecordsResources = `${domain.resource}\n\n${recordsResources}`;
 
-        saveIntoFile(`./output/${domain.domain}.tf`, domainResource);
+        saveIntoFile(`./output/${domain.domain}.tf`, domainAndRecordsResources);
     } catch (error) {
-        console.error(`Error processing domain ${domain.domain}:`, error);
+        console.error(`${positionString} - Error processing domain ${domain.domain}:`, error);
     }
-
 }
 
-saveIntoFile(`./output/import.tf`, importResources);
+saveIntoFile(`./output/import.tf`, importFileContent);

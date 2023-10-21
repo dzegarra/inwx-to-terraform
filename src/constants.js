@@ -401,7 +401,7 @@ const Country = {
 *   identifier: string, 
 *   import: string, 
 *   resource: string
-* }} DomainResource
+* }} DomainObject
 */
 
 /**
@@ -441,5 +441,5 @@ const Country = {
  *   roId: number,
  *   import: string,
  *   resource: string,
- * }} ContactResource
+ * }} ContactObject
  */

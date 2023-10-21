@@ -77,7 +77,7 @@ export const buildResource = (record, index, allRecords) => {
 
 /**
  * @param {import("./constants").Contact} contact
- * @returns {import("./constants").ContactResource}
+ * @returns {import("./constants").ContactObject}
  */
 export const getContactTfResource = (contact) => {
     const identifier = genResourceIdentifier(`${contact.type}_${contact.name}`);
@@ -111,7 +111,7 @@ export const getContactTfResource = (contact) => {
 /**
  * @param {Record<number, string>} contactIDs
  * @param {import("./constants").Domain} domain
- * @returns {import("./constants").DomainResource}
+ * @returns {import("./constants").DomainObject}
  */
 export const getDomainTfResource = (contactIDs, domain) => {
     const identifier = genResourceIdentifier(domain.domain);
