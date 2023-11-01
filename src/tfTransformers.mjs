@@ -1,12 +1,6 @@
 import { extractDomainExtraData, printKeyValues, printSimpleResource } from "./helpers.mjs";
 
 /**
- * @param {import("./constants.js").Domain} domain 
- * @returns {boolean}
- */
-export const isInwxDomain = (domain) => domain.ns.includes("ns.inwx.de");
-
-/**
  * Generates a valid Terraform resource identifier.
  * @param {string} name
  * @returns {string}

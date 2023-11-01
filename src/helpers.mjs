@@ -53,7 +53,7 @@ export const getContacts = async (apiClient, maxResultCount = 1000) => {
  * @param {ApiClient} apiClient 
  * @returns {Promise<Array<import("./constants.js").Domain>>}
  */
-export const getDomains = async (apiClient, maxResultCount = 1000) => {
+export const getDomainsList = async (apiClient, maxResultCount = 1000) => {
     const response = await callApi(apiClient, "domain.list", {pagelimit: maxResultCount});
     return response?.domain;
 }
@@ -64,9 +64,9 @@ export const getDomains = async (apiClient, maxResultCount = 1000) => {
  * @param {string} domainName
  * @returns {Promise<Array<import("./constants.js").DomainRecord>>}
  */
-export const getNameServerInfo = async (apiClient, domainName) => {
+export const getDomainRecords = async (apiClient, domainName) => {
     const response = await callApi(apiClient, "nameserver.info", {domain: domainName});
-    return response?.record;
+    return response?.record ?? [];
 }
 
 /**
